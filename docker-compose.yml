@@ -39,8 +39,6 @@ services:
     env_file:
       - ./env_variables/local.env
     image: guacamole/guacamole
-    links:
-    - guacd
     networks:
       guacnetwork_compose:
     ports:
@@ -61,8 +59,6 @@ services:
    - ./nginx/mysite.template:/etc/nginx/conf.d/default.conf:ro
    ports:
    - 8443:443
-   links:
-   - guacamole
    networks:
      guacnetwork_compose:
   # nginx without debug mode
