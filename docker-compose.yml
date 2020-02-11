@@ -1,29 +1,22 @@
-version: '2.0'
+version: '3.7'
 
-networks:
-  guacnetwork_compose:
-    driver: bridge
-
-# services
 services:
 
   guacd:
-    container_name: guacd_compose
     image: guacamole/guacd
     networks:
-      guacnetwork_compose:
+      - guacnetwork_compose
     restart: on-failure:3
     volumes:
     - ./drive:/drive:rw
     - ./record:/record:rw
 
   postgres:
-    container_name: postgres_guacamole_compose
     env_file:
       - ./env_variables/local.env
     image: postgres
     networks:
-      guacnetwork_compose:
+      - guacnetwork_compose
     restart: on-failure:3
     ports:
       - "5432:5432"
@@ -32,7 +25,6 @@ services:
     - ./data:/var/lib/postgresql/data:rw
 
   guacamole:
-    container_name: guacamole_compose
     depends_on:
     - guacd
     - postgres
@@ -40,7 +32,7 @@ services:
       - ./env_variables/local.env
     image: guacamole/guacamole
     networks:
-      guacnetwork_compose:
+      - guacnetwork_compose
     ports:
 ## enable next line if not using nginx
 ##    - 8080:8080/tcp
@@ -49,9 +41,10 @@ services:
     restart: on-failure:3
 
   nginx:
-   container_name: nginx_guacamole_compose
    restart: on-failure:3
    image: nginx
+   depends_on:
+    - guacamole
    volumes:
    - ./nginx/ssl/self.cert:/etc/nginx/ssl/self.cert:ro
    - ./nginx/ssl/self-ssl.key:/etc/nginx/ssl/self-ssl.key:ro
@@ -60,8 +53,12 @@ services:
    ports:
    - 8443:443
    networks:
-     guacnetwork_compose:
+      - guacnetwork_compose
   # nginx without debug mode
   #  command: /bin/bash -c "nginx -g 'daemon off;'"
   # nginx with debug mode
    command: /bin/bash -c "nginx-debug -g 'daemon off;'"
+
+networks:
+  guacnetwork_compose:
+    driver: bridge
